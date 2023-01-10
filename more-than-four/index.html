@@ -1,0 +1,82 @@
+<head>
+  <style> body { margin: 0; } </style>
+
+  <script src="//unpkg.com/force-graph"></script>
+  <!--<script src="../../dist/force-graph.js"></script>-->
+</head>
+
+<body>
+<br/>
+  <div id="graph"></div>
+
+  <script>
+    fetch('more-than-four.json').then(res => res.json()).then(data => {
+      const Graph = ForceGraph()
+      (document.getElementById('graph'))
+        .graphData(data)
+        .nodeId('id')
+        .nodeAutoColorBy('group')
+		
+		.nodeLabel('id')
+		
+        .nodeCanvasObject((node, ctx, globalScale) => {
+		
+		if (node.group == 1) {
+		
+        const label = node.id;
+        const fontSize = 14/globalScale;
+        ctx.font = `${fontSize}px Sans-Serif`;
+        const textWidth = ctx.measureText(label).width;
+        const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = node.color;
+        ctx.fillText(label, node.x, node.y);
+
+        node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
+        
+		} else {
+		const label = node.id;
+		const neighbors = node.neighbors;
+		const size = neighbors * 0.2
+        const fontSize = size;
+        ctx.font = `${fontSize}px Sans-Serif`;
+        const textWidth = size;
+        const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+		node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
+		ctx.fillStyle = 'rgba(255, 45, 125, 1)';
+		ctx.beginPath();
+		ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+		ctx.fill();
+		ctx.linewidth = 1;
+		ctx.strokeStyle = '#003300';
+		ctx.stroke()
+		}
+		
+		})
+		
+		
+        .nodePointerAreaPaint((node, color, ctx) => {
+		
+		if (node.group == 1) {
+		
+          ctx.fillStyle = color;
+          const bckgDimensions = node.__bckgDimensions;
+          bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+        
+		} else {
+		
+          ctx.fillStyle = color;
+          const bckgDimensions = node.__bckgDimensions;
+          bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+		
+		} 
+		
+		});
+    });
+  </script>
+</body>
